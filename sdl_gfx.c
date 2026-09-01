@@ -14,14 +14,14 @@ void sdl_init(const char *title, const int width, const int height)
 
 void sdl_draw_start()
 {
-    SDL_SetRenderDrawColor(pren, 0, 0, 0, 255);
-    SDL_RenderClear(pren);
+  SDL_SetRenderDrawColor(pren, 0, 0, 0, 255);
+  SDL_RenderClear(pren);
 }
 
 void sdl_draw_end()
 {
-    SDL_RenderPresent(pren);
-    SDL_Delay(16);
+  SDL_RenderPresent(pren);
+  SDL_Delay(16);
 }
 
 void sdl_cleanup()
