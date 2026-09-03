@@ -8,8 +8,7 @@
 
 int main()
 {
-  sdl_gfx *gfx = {0};
-  gfx = sdl_gfx_init("software renderer", SCREEN_WIDTH, SCREEN_HEIGHT);
+  sdl_gfx *gfx = sdl_gfx_init("software renderer", SCREEN_WIDTH, SCREEN_HEIGHT);
 
   SDL_Event e;
   bool running = true;

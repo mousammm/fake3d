@@ -2,6 +2,7 @@
 #define MATRIX_HEADER
 
 #include "./vectors.h"
+#include <math.h>
 
 #define DEG_TO_RAD 0.017453292519943f
 

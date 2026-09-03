@@ -1,6 +1,4 @@
 #include "./includes/matrix.h"
-#include "includes/vectors.h"
-#include <math.h>
 
 vec3_t mat4_mul_vec3(const mat4x4_t* mat, vec3_t vec)
 {
