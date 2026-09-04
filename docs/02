@@ -1,6 +1,0 @@
-# if x,y, (t: angle) to rotate around the origin
-  a = x.cos(t) - y.sin(t)
-  b = x.sin(t) + y.cos(t)
-* more efficent is to define rotations using rotation matrices,
-* construct from three angles, one for each of the XY, XZ, and YZ planes.
-* These angles are commonly referred to as Euler angles

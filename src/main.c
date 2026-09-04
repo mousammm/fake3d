@@ -37,7 +37,7 @@ int main()
   float scale        = 1.0;
 
   const int render_mode_count = 2;
-  int render_mode = 1;
+  int render_mode = 0;
 
   const mat4x4_t perspective_mat = create_perspective_matrix(FOV, SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
@@ -75,7 +75,7 @@ int main()
 
     switch (render_mode) {
       case 0:
-        draw_wireframe(gfx, cube.transformed_vertices, cube.triangles, cube.triangles_count, 0xFFFF00FF, &perspective_mat, false);
+        draw_wireframe(gfx, cube.transformed_vertices, cube.triangles, cube.triangles_count, 0xFF00FF00, &perspective_mat, false);
         break;
       case 1:
         draw_wireframe(gfx, cube.transformed_vertices, cube.triangles, cube.triangles_count, 0xFFFF00FF, &perspective_mat, true);
