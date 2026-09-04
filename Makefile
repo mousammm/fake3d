@@ -1,4 +1,4 @@
-BIN=renderer
+BIN=fake3d
 
 all:
 	gcc -ggdb -o $(BIN)  ./src/main.c -lSDL2 -lm

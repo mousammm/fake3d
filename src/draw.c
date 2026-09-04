@@ -74,8 +74,8 @@ void draw_wireframe(
     const vec3_t p2 = project_to_screen(projection_matrix, v2);
     const vec3_t p3 = project_to_screen(projection_matrix, v3);
 
-    if (is_outside_frustum(p1, p2, p3))
-      continue;
+    // if (is_outside_frustum(p1, p2, p3))
+    //   continue;
 
     draw_line(gfx, (vec2_t){p1.x, p1.y}, (vec2_t){p2.x, p2.y}, color);
     draw_line(gfx, (vec2_t){p2.x, p2.y}, (vec2_t){p3.x, p3.y}, color);
