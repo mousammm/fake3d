@@ -1,10 +1,6 @@
 # fake3d
 
-Fully softwared renderer in C using SDL2.
-
-## demo
-
-https://github.com/user-attachments/assets/53400d86-8a3b-4e47-bdc8-2f95c966bbe8
+https://github.com/user-attachments/assets/1d4b6680-a693-4b4f-b441-0a85a7ead00a
 
 ## building and running
 ```
