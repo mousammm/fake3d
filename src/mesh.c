@@ -17,7 +17,6 @@ mesh_t create_cube(void)
   mesh.transformed_vertices = malloc(mesh.vertex_count    * sizeof(vec3_t));
   mesh.transformed_normals  = malloc(mesh.normals_count   * sizeof(vec3_t));
 
-
   mesh.vertices[0] = (vec3_t){-1.0f, -1.0f, -1.0f};
   mesh.vertices[1] = (vec3_t){-1.0f,  1.0f, -1.0f};
   mesh.vertices[2] = (vec3_t){ 1.0f,  1.0f, -1.0f};

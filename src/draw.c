@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "./includes/draw.h"
 #include "includes/matrix.h"
 #include "includes/mesh.h"
@@ -45,7 +46,7 @@ static void draw_line(sdl_gfx* gfx, const vec2_t a, const vec2_t b, const uint32
     float y = a.y;
 
     for (int i = 0; i <= (int)longer_delta; ++i) {
-        sdl_gfx_draw_pixel(gfx, (int)x, (int)y, color);
+        sdl_gfx_put_pixel(gfx, (int)x, (int)y, color);
         x += inc_x;
         y += inc_y;
     }

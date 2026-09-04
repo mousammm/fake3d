@@ -24,7 +24,7 @@ mat4x4_t mat4_mul_mat4(const mat4x4_t* a, const mat4x4_t* b)
   mat4x4_t result = {0};
 
   for (int i = 0; i < 4; ++i) {
-    for (int j = 0; i < 4; ++j) {
+    for (int j = 0; j < 4; ++j) {
       result.m[i][j] = a->m[i][0] * b->m[0][j] + 
                        a->m[i][1] * b->m[1][j] +
                        a->m[i][2] * b->m[2][j] + 

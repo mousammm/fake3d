@@ -1,7 +1,7 @@
 BIN=renderer
 
 all:
-	gcc -o $(BIN)  ./src/main.c -lSDL3 -lm
+	gcc -ggdb -o $(BIN)  ./src/main.c -lSDL2 -lm
 
 run:
 	./$(BIN)

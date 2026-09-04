@@ -1,47 +1,57 @@
 #include "./includes/sdl_gfx.h"
 
-sdl_gfx* sdl_gfx_init(const char *title, const int width, const int height)
+sdl_gfx* sdl_gfx_init(const char* title, const int s_width, const int s_height)
 {
   sdl_gfx* gfx = malloc(sizeof(sdl_gfx));
 
   SDL_Init(SDL_INIT_VIDEO);
 
-  gfx->window      = SDL_CreateWindow(title, width, height, 0);
-  gfx->renderer    = SDL_CreateRenderer(gfx->window, NULL);
-  gfx->texture     = SDL_CreateTexture(gfx->renderer, SDL_PIXELFORMAT_XBGR8888, SDL_TEXTUREACCESS_STATIC, width, height);
-  gfx->buffer      = malloc(width * height * 4);
-  gfx->buffer_size = width * height;
+  gfx->width = s_width;
+  gfx->height = s_height;
+
+  gfx->window                = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, s_width, s_height, 0);
+  gfx->renderer              = SDL_CreateRenderer(gfx->window, -1, SDL_RENDERER_ACCELERATED);
+  gfx->frame_buffer_texture  = SDL_CreateTexture(gfx->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, s_width, s_height);
+  gfx->frame_buffer          = (uint32_t*)malloc(s_width * s_height* sizeof(uint32_t));
 
   return gfx;
 }
 
 void sdl_gfx_render(sdl_gfx* gfx)
 {
-  SDL_UpdateTexture(gfx->texture, NULL, gfx->buffer, gfx->width * 4);
-  SDL_RenderClear(gfx->renderer);
-  SDL_RenderTexture(gfx->renderer, gfx->texture, NULL, NULL);
-  SDL_RenderPresent(gfx->renderer);
-}
+  // push the CPU pixel array to the GPU streaming texture
+  SDL_UpdateTexture(
+    gfx->frame_buffer_texture, 
+    NULL,                                // Update the whole texture
+    gfx->frame_buffer,                    // Pointer to raw pixel buffer array
+    gfx->width * sizeof(uint32_t)      // Pitch: size of one row of pixels in bytes
+  );
 
-void sdl_gfx_draw_pixel(sdl_gfx* gfx, const int x, const int y, const uint32_t color)
-{
-  if (x < 0 || x >= gfx->width || y < 0 || y >= gfx->height)
-    return;
-
-  gfx->buffer[y * gfx->width + x] = color;
+  SDL_RenderClear(gfx->renderer);                                       // clear renderer
+  SDL_RenderCopy(gfx->renderer, gfx->frame_buffer_texture, NULL, NULL); // copy texture to render
+  SDL_RenderPresent(gfx->renderer);                                     // present to screen
+  SDL_Delay(16);                                                        // cap to 60 fps
 }
 
 void sdl_gfx_clear(sdl_gfx* gfx, const uint32_t color)
 {
   for (int i = 0; i < gfx->width * gfx->height; ++i) {
-    gfx->buffer[i] = color;
+    gfx->frame_buffer[i] = color;
   }
+}
+
+void sdl_gfx_put_pixel(sdl_gfx* gfx, const int x, const int y, const uint32_t color)
+{
+  if (x < 0 || x >= gfx->width || y < 0 || y >= gfx->height)
+    return;
+
+  gfx->frame_buffer[y * gfx->width + x] = color;
 }
 
 void sdl_gfx_cleanup(sdl_gfx* gfx)
 {
-  free(gfx->buffer);
-  SDL_DestroyTexture(gfx->texture);
+  free(gfx->frame_buffer);
+  SDL_DestroyTexture(gfx->frame_buffer_texture);
   SDL_DestroyRenderer(gfx->renderer);
   SDL_DestroyWindow(gfx->window);
   SDL_Quit();
