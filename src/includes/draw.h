@@ -13,7 +13,7 @@ void draw_wireframe(
     const triangle_t* triangles,
     int triangles_count,
     uint32_t color,
-    const mat4x4_t* projection_matrix,
+    const mat4x4_t* perspective_projection_matrix,
     bool cull_back_face);
 
 #endif // !DRAW_HEADER

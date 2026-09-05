@@ -1,7 +1,9 @@
-#include "./includes/inputs.h"
+#include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include "./includes/inputs.h"
 
-void handle_inputs(vec3_t *translation, vec3_t *rotation, float *scale, int *render_mode, int render_mode_count, float delta_time)
+void handle_inputs(vec3_t *translation, vec3_t *rotation, float *scale, float delta_time)
 {
   const uint8_t* key_state = SDL_GetKeyboardState(NULL);
 

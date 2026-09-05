@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "./includes/constants.h"
 #include "./includes/sdl_gfx.h"
@@ -36,7 +35,6 @@ int main()
   vec3_t rotation    = (vec3_t){0.0f, 0.0f, 0.0f};
   float scale        = 1.0;
 
-  const int render_mode_count = 2;
   int render_mode = 0;
 
   const mat4x4_t perspective_mat = create_perspective_matrix(FOV, SCREEN_WIDTH, SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
@@ -59,8 +57,10 @@ int main()
       if (e.type == SDL_QUIT) { running = false; }
     }
     if (KEYS[SDL_SCANCODE_ESCAPE]) { running = 0; }
-    handle_inputs(&translation, &rotation, &scale, &render_mode, render_mode_count, delta_time);
+    handle_inputs(&translation, &rotation, &scale, delta_time);
 
+    //
+    // create matrices for model view matrices
     mat4x4_t translation_mat = create_translation_matrix(translation.x, translation.y, translation.z);
     mat4x4_t rotation_mat    = create_rotation_matrix(rotation.x, rotation.y, rotation.z);
     mat4x4_t scale_mat       = create_scale_matrix(scale, scale, scale);
@@ -76,9 +76,6 @@ int main()
     switch (render_mode) {
       case 0:
         draw_wireframe(gfx, cube.transformed_vertices, cube.triangles, cube.triangles_count, 0xFF00FF00, &perspective_mat, false);
-        break;
-      case 1:
-        draw_wireframe(gfx, cube.transformed_vertices, cube.triangles, cube.triangles_count, 0xFFFF00FF, &perspective_mat, true);
         break;
     }
 
