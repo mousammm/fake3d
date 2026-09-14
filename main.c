@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
 #include "./sh_gfx.h"
@@ -6,19 +7,30 @@
 int main(int argc, char** argv) {
   sh_gfx* gfx = sh_gfx_init("fake3d", SWIDTH, SHEIGHT);
 
-  int isRunning = 1;
-  SDL_Event event;
-
   mesh_t cube      = create_cube();
   mat4x4_t matProj = create_perspective_matrix(SWIDTH, SHEIGHT, FOV, NEAR_PLANE, FAR_PLANE);
   float fTheta     = 0.0f; // Angle tracker for rotation
 
-  while (isRunning) {
-    while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { isRunning = 0; } }
+  int quit = false;
+  SDL_Event event;
+  const uint8_t* KEYS = SDL_GetKeyboardState(NULL);
+  Uint64 last_time = SDL_GetPerformanceCounter();
+
+  while (!quit) {
+    //
+    // delta time stuff
+    const Uint64 current_time = SDL_GetPerformanceCounter();
+    const float delta_time    = (float)(current_time - last_time) / (float)SDL_GetPerformanceFrequency();
+    last_time                 = current_time;
+
+    //
+    // handle inputs
+    while(SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { quit = true; } }
+    if (KEYS[SDL_SCANCODE_ESCAPE]) { quit = true; }
 
     sh_gfx_clear(gfx, 0xFF000000);
 
-    fTheta += 0.02;
+    fTheta += 0.4 * delta_time;
 
     // Setup Rotation Matrices
     mat4x4_t matRotZ = {0}, matRotX = {0};
@@ -65,10 +77,10 @@ int main(int argc, char** argv) {
         triProjected.p[v].y = (triProjected.p[v].y + 1.0f) * 0.5f * SHEIGHT;
       }
 
-      uint32_t wireframeColor = 0xFFFFFFFF;
-      sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, 0xFFFFFF00);
-      sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, 0xFFFF0000);
-      sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, 0xFF0000FF);
+      uint32_t wfColor = 0xFFFFFFFF;
+      sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
+      sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
+      sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
     }
 
     sh_gfx_render(gfx);

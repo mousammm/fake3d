@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#define DEG_TO_RAD 0.017453292519943f // 180 / PI
+#define DEG_TO_RAD 0.017453292519943f //  PI/180
 
 typedef struct {
   double x, y, z;
@@ -36,7 +36,6 @@ inline static vec3d_t multiply_mat4x4_vec3d(vec3d_t i, mat4x4_t m) {
 
 static mat4x4_t create_perspective_matrix(int screen_width, int screen_height, float fov, float near, float far)
 {
-  //float fov_rad      = 1.0f / tanf(fov * 0.5f / 180.0f * M_PI);
   float fov_rad      = 1.0f / tanf(fov * 0.5f * DEG_TO_RAD);
   const float aspect = (float)screen_width / (float)screen_height;
 
