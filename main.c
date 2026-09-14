@@ -1,28 +1,22 @@
+#include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
-#include "./sdl_gfx.h"
+#include "./sh_gfx.h"
 #include "./sh_la.h"
 
-#define SWIDTH 800
-#define SHEIGHT 600
-
 int main(int argc, char** argv) {
-  sdl_gfx* gfx = sdl_gfx_init("fake3d", SWIDTH, SHEIGHT);
+  sh_gfx* gfx = sh_gfx_init("fake3d", SWIDTH, SHEIGHT);
 
   int isRunning = 1;
   SDL_Event event;
 
-  mesh_t cube = create_cube();
-
-  // Setup Perspective Projection Matrix
-  float fov = 90.0f, near = 0.1f, far = 1000.0f;
-  mat4x4_t matProj = create_perspective_matrix(SWIDTH, SHEIGHT, fov, near, far);
-
-  float fTheta = 0.0f; // Angle tracker for rotation
+  mesh_t cube      = create_cube();
+  mat4x4_t matProj = create_perspective_matrix(SWIDTH, SHEIGHT, FOV, NEAR_PLANE, FAR_PLANE);
+  float fTheta     = 0.0f; // Angle tracker for rotation
 
   while (isRunning) {
     while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { isRunning = 0; } }
 
-    sdl_gfx_clear(gfx, 0xFF000000);
+    sh_gfx_clear(gfx, 0xFF000000);
 
     fTheta += 0.02;
 
@@ -53,18 +47,18 @@ int main(int argc, char** argv) {
       triRotatedZX.p[1] = multiply_mat4x4_vec3d(triRotatedZ.p[1], matRotX);
       triRotatedZX.p[2] = multiply_mat4x4_vec3d(triRotatedZ.p[2], matRotX);
 
-      // 2. Translate geometry out into the scene (away from the camera)
+      // Translate geometry out into the scene (away from the camera)
       triTranslated = triRotatedZX;
       triTranslated.p[0].z = triRotatedZX.p[0].z + 3.0f; // Push 3 units into screen
       triTranslated.p[1].z = triRotatedZX.p[1].z + 3.0f;
       triTranslated.p[2].z = triRotatedZX.p[2].z + 3.0f;
 
-      // 3. Project 3D points onto 2D viewport space
+      // Project 3D points onto 2D viewport space
       triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
       triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
       triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
 
-      // 4. Scale and offset into screen pixel space (Normalized Device Coordinates -> Screen Space)
+      // Scale and offset into screen pixel space (Normalized Device Coordinates -> Screen Space)
       // Map X and Y from [-1, 1] to [0, SWIDTH] and [0, SHEIGHT]
       for (int v = 0; v < 3; ++v) {
         triProjected.p[v].x = (triProjected.p[v].x + 1.0f) * 0.5f * SWIDTH;
@@ -72,14 +66,14 @@ int main(int argc, char** argv) {
       }
 
       uint32_t wireframeColor = 0xFFFFFFFF;
-      sdl_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, 0xFFFFFF00);
-      sdl_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, 0xFFFF0000);
-      sdl_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, 0xFF0000FF);
+      sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, 0xFFFFFF00);
+      sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, 0xFFFF0000);
+      sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, 0xFF0000FF);
     }
 
-    sdl_gfx_render(gfx);
+    sh_gfx_render(gfx);
   }
 
-  sdl_gfx_cleanup(gfx);
+  sh_gfx_cleanup(gfx);
   return 0;
 }

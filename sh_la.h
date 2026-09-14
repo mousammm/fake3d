@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#define DEG_TO_RAD 0.017453292519943f // 180 / PI
+
 typedef struct {
   double x, y, z;
 } vec3d_t;
@@ -26,8 +28,7 @@ inline static vec3d_t multiply_mat4x4_vec3d(vec3d_t i, mat4x4_t m) {
       o.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + m.m[3][2];
   float w = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + m.m[3][3];
 
-  // Perspective divide (convert from homogeneous coordinates to 3D space)
-  // normalize coordinates
+  // normalize coordinates (convert from homogeneous coordinates to 3D space)
   if (w != 0.0f) { o.x /= w; o.y /= w; o.z /= w; }
 
   return o;
@@ -35,8 +36,8 @@ inline static vec3d_t multiply_mat4x4_vec3d(vec3d_t i, mat4x4_t m) {
 
 static mat4x4_t create_perspective_matrix(int screen_width, int screen_height, float fov, float near, float far)
 {
-  // fov deg to rad
-  float fov_rad      = 1.0f / tanf(fov * 0.5f / 180.0f * M_PI);
+  //float fov_rad      = 1.0f / tanf(fov * 0.5f / 180.0f * M_PI);
+  float fov_rad      = 1.0f / tanf(fov * 0.5f * DEG_TO_RAD);
   const float aspect = (float)screen_width / (float)screen_height;
 
   return (mat4x4_t) {{

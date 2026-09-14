@@ -1,31 +1,3 @@
-/*
-EXAMPLE USAGE:
-
-  #define SDL_GFX_IMPLEMENTATION
-  #include "./sdl_gfx.h"
-  
-  int main(int argc, char** argv) {
-  
-    sdl_gfx* gfx = sdl_gfx_init("frame buffer", 800, 600);
-  
-    int isRunning = 1;
-    SDL_Event event;
-  
-    while (isRunning) {
-      while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { isRunning = 0; } }
-  
-      sdl_gfx_clear(gfx, 0xFF000000); // 0xAARRGGBB
-      sdl_gfx_put_pixel(gfx, x, y, pixelColor);
-      sdl_gfx_draw_line(gfx, 100, 200, 400, 400, pixelColor);
-      sdl_gfx_render(gfx);
-    }
-  
-    sdl_gfx_cleanup(gfx);
-    return 0;
-  }
-
-*/
-
 #ifndef SDL_GFX_HEADER
 #define SDL_GFX_HEADER
 
@@ -40,7 +12,7 @@ typedef struct {
   SDL_Renderer* renderer;
   SDL_Texture* frame_buffer_texture;
   uint32_t* frame_buffer;
-} sdl_gfx;
+} sh_gfx;
 
 #ifndef SDLGFXDEF
 #define SDLGFXDEF
@@ -48,20 +20,20 @@ typedef struct {
 
 //
 // Core lib
-SDLGFXDEF sdl_gfx* sdl_gfx_init(const char* title, const int s_width, const int s_height);
-SDLGFXDEF void     sdl_gfx_render(sdl_gfx* gfx);
-SDLGFXDEF void     sdl_gfx_clear(sdl_gfx* gfx, const uint32_t color);
-SDLGFXDEF void     sdl_gfx_put_pixel(sdl_gfx* gfx, const int x, const int y, const uint32_t color);
-SDLGFXDEF void     sdl_gfx_cleanup(sdl_gfx* gfx);
-SDLGFXDEF void     sdl_gfx_draw_line(sdl_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color);
+SDLGFXDEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height);
+SDLGFXDEF void    sh_gfx_render(sh_gfx* gfx);
+SDLGFXDEF void    sh_gfx_clear(sh_gfx* gfx, const uint32_t color);
+SDLGFXDEF void    sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color);
+SDLGFXDEF void    sh_gfx_cleanup(sh_gfx* gfx);
+SDLGFXDEF void    sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color);
 
 #endif // SDL_GFX_HEADER
 
 #ifdef SDL_GFX_IMPLEMENTATION
 
-SDLGFXDEF sdl_gfx* sdl_gfx_init(const char* title, const int s_width, const int s_height)
+SDLGFXDEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height)
 {
-  sdl_gfx* gfx = (sdl_gfx*)malloc(sizeof(sdl_gfx));
+  sh_gfx* gfx = (sh_gfx*)malloc(sizeof(sh_gfx));
 
   SDL_Init(SDL_INIT_VIDEO);
 
@@ -76,7 +48,7 @@ SDLGFXDEF sdl_gfx* sdl_gfx_init(const char* title, const int s_width, const int 
   return gfx;
 }
 
-SDLGFXDEF void sdl_gfx_render(sdl_gfx* gfx)
+SDLGFXDEF void sh_gfx_render(sh_gfx* gfx)
 {
   // push the CPU pixel array to the GPU streaming texture
   SDL_UpdateTexture(
@@ -92,14 +64,14 @@ SDLGFXDEF void sdl_gfx_render(sdl_gfx* gfx)
   SDL_Delay(16);                                                        // cap to 60 fps
 }
 
-SDLGFXDEF void sdl_gfx_clear(sdl_gfx* gfx, const uint32_t color)
+SDLGFXDEF void sh_gfx_clear(sh_gfx* gfx, const uint32_t color)
 {
   for (int i = 0; i < gfx->width * gfx->height; ++i) {
     gfx->frame_buffer[i] = color;
   }
 }
 
-SDLGFXDEF void sdl_gfx_put_pixel(sdl_gfx* gfx, const int x, const int y, const uint32_t color)
+SDLGFXDEF void sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color)
 {
   if (x < 0 || x >= gfx->width || y < 0 || y >= gfx->height)
     return;
@@ -107,7 +79,7 @@ SDLGFXDEF void sdl_gfx_put_pixel(sdl_gfx* gfx, const int x, const int y, const u
   gfx->frame_buffer[y * gfx->width + x] = color;
 }
 
-SDLGFXDEF void sdl_gfx_cleanup(sdl_gfx* gfx)
+SDLGFXDEF void sh_gfx_cleanup(sh_gfx* gfx)
 {
   free(gfx->frame_buffer);
   SDL_DestroyTexture(gfx->frame_buffer_texture);
@@ -116,7 +88,7 @@ SDLGFXDEF void sdl_gfx_cleanup(sdl_gfx* gfx)
   SDL_Quit();
 }
 
-SDLGFXDEF void sdl_gfx_draw_line(sdl_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color) {
+SDLGFXDEF void sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color) {
   int dx = abs(x1 - x0);
   int dy = abs(y1 - y0);
   
@@ -127,7 +99,7 @@ SDLGFXDEF void sdl_gfx_draw_line(sdl_gfx* gfx, int x0, int y0, int x1, int y1, u
   int e2;
 
   while (1) {
-    sdl_gfx_put_pixel(gfx, x0, y0, color);
+    sh_gfx_put_pixel(gfx, x0, y0, color);
 
     if (x0 == x1 && y0 == y1) break;
     e2 = 2 * err;
