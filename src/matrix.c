@@ -29,7 +29,6 @@ mat4x4_t mat4_mul_mat4(const mat4x4_t* a, const mat4x4_t* b)
                        a->m[i][1] * b->m[1][j] +
                        a->m[i][2] * b->m[2][j] + 
                        a->m[i][3] * b->m[3][j]; 
-
     }
   }
 
@@ -55,6 +54,7 @@ mat4x4_t create_scale_matrix(float sx, float sy, float sz)
     {0.0f, 0.0f, 0.0f, 1.0f},
   }};
 }
+
 mat4x4_t create_rotation_matrix(float pitch_X, float yaw_Y, float roll_Z)
 {
   const float alpha = yaw_Y   * DEG_TO_RAD;
