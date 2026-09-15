@@ -14,24 +14,24 @@ typedef struct {
   uint32_t* frame_buffer;
 } sh_gfx;
 
-#ifndef SDLGFXDEF
-#define SDLGFXDEF
+#ifndef SH_GFX_DEF
+#define SH_GFX_DEF
 #endif
 
 //
 // Core lib
-SDLGFXDEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height);
-SDLGFXDEF void    sh_gfx_render(sh_gfx* gfx);
-SDLGFXDEF void    sh_gfx_clear(sh_gfx* gfx, const uint32_t color);
-SDLGFXDEF void    sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color);
-SDLGFXDEF void    sh_gfx_cleanup(sh_gfx* gfx);
-SDLGFXDEF void    sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color);
+SH_GFX_DEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height);
+SH_GFX_DEF void    sh_gfx_render(sh_gfx* gfx);
+SH_GFX_DEF void    sh_gfx_clear(sh_gfx* gfx, const uint32_t color);
+SH_GFX_DEF void    sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color);
+SH_GFX_DEF void    sh_gfx_cleanup(sh_gfx* gfx);
+SH_GFX_DEF void    sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color);
 
 #endif // SDL_GFX_HEADER
 
 #ifdef SDL_GFX_IMPLEMENTATION
 
-SDLGFXDEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height)
+SH_GFX_DEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_height)
 {
   sh_gfx* gfx = (sh_gfx*)malloc(sizeof(sh_gfx));
 
@@ -48,7 +48,7 @@ SDLGFXDEF sh_gfx* sh_gfx_init(const char* title, const int s_width, const int s_
   return gfx;
 }
 
-SDLGFXDEF void sh_gfx_render(sh_gfx* gfx)
+SH_GFX_DEF void sh_gfx_render(sh_gfx* gfx)
 {
   // push the CPU pixel array to the GPU streaming texture
   SDL_UpdateTexture(
@@ -64,14 +64,14 @@ SDLGFXDEF void sh_gfx_render(sh_gfx* gfx)
   SDL_Delay(16);                                                        // cap to 60 fps
 }
 
-SDLGFXDEF void sh_gfx_clear(sh_gfx* gfx, const uint32_t color)
+SH_GFX_DEF void sh_gfx_clear(sh_gfx* gfx, const uint32_t color)
 {
   for (int i = 0; i < gfx->width * gfx->height; ++i) {
     gfx->frame_buffer[i] = color;
   }
 }
 
-SDLGFXDEF void sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color)
+SH_GFX_DEF void sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color)
 {
   if (x < 0 || x >= gfx->width || y < 0 || y >= gfx->height)
     return;
@@ -79,7 +79,7 @@ SDLGFXDEF void sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uin
   gfx->frame_buffer[y * gfx->width + x] = color;
 }
 
-SDLGFXDEF void sh_gfx_cleanup(sh_gfx* gfx)
+SH_GFX_DEF void sh_gfx_cleanup(sh_gfx* gfx)
 {
   free(gfx->frame_buffer);
   SDL_DestroyTexture(gfx->frame_buffer_texture);
@@ -88,7 +88,7 @@ SDLGFXDEF void sh_gfx_cleanup(sh_gfx* gfx)
   SDL_Quit();
 }
 
-SDLGFXDEF void sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color) {
+SH_GFX_DEF void sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color) {
   int dx = abs(x1 - x0);
   int dy = abs(y1 - y0);
   

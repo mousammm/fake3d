@@ -34,13 +34,56 @@ inline static vec3d_t multiply_mat4x4_vec3d(vec3d_t i, mat4x4_t m) {
   return o;
 }
 
-static mat4x4_t create_perspective_matrix(int screen_width, int screen_height, float fov, float near, float far)
+static mat4x4_t multiply_mat4x4(const mat4x4_t* a, const mat4x4_t* b)
 {
-  float fov_rad      = 1.0f / tanf(fov * 0.5f * DEG_TO_RAD);
-  const float aspect = (float)screen_width / (float)screen_height;
+  mat4x4_t result = {0};
+
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result.m[i][j] = a->m[i][0] * b->m[0][j] + 
+                       a->m[i][1] * b->m[1][j] +
+                       a->m[i][2] * b->m[2][j] + 
+                       a->m[i][3] * b->m[3][j]; 
+    }
+  }
+
+  return result;
+}
+
+static mat4x4_t create_rotation_matrix(float pitch_X, float yaw_Y, float roll_Z)
+{
+  // const float alpha = yaw_Y   * M_PI / 180.0f;
+  // const float beta  = pitch_X * M_PI / 180.0f;
+  // const float gamma = roll_Z  * M_PI / 180.0f;
+
+  const float alpha = yaw_Y   * DEG_TO_RAD;
+  const float beta  = pitch_X * DEG_TO_RAD;
+  const float gamma = roll_Z  * DEG_TO_RAD;
+
+  const float ca = cosf(alpha);
+  const float sa = sinf(alpha);
+  const float cb = cosf(beta);
+  const float sb = sinf(beta);
+  const float cg = cosf(gamma);
+  const float sg = sinf(gamma);
 
   return (mat4x4_t) {{
-    {fov_rad/aspect,    0.0f,                       0.0f,  0.0f},
+    { ca*cb, ca*sb*sg - sa*cg, ca*sb*cg + sa*sg, 0},
+    { sa*cb, sa*sb*sg + ca*cg, sa*sb*cg - ca*sg, 0},
+    {   -sb,            cb*sg,            cb*cg, 0},
+    {     0,                0,                0, 1}
+  }};
+}
+
+static mat4x4_t create_perspective_matrix(int screen_width, int screen_height, float fov, float near, float far)
+{
+  // float fov_rad      = 1.0f / tanf(fov * 0.5f * M_PI / 180.0f);
+  float fov_rad      = 1.0f / tanf(fov * 0.5f * DEG_TO_RAD);
+  const float aspect = (float)screen_height / (float)screen_width;
+
+  return (mat4x4_t) {{
+    // {fov_rad/aspect,    0.0f,                       0.0f,  0.0f},
+    {aspect*fov_rad,    0.0f,                       0.0f,  0.0f},
     {          0.0f, fov_rad,                       0.0f,  0.0f},
     {          0.0f,    0.0f,         far / (far - near),  1.0f},
     {          0.0f,    0.0f, (-far * near)/(far - near),  0.0f},

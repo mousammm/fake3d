@@ -17,66 +17,50 @@ int main(int argc, char** argv) {
   Uint64 last_time = SDL_GetPerformanceCounter();
 
   while (!quit) {
-    //
-    // delta time stuff
+    // DELTA TIME
     const Uint64 current_time = SDL_GetPerformanceCounter();
     const float delta_time    = (float)(current_time - last_time) / (float)SDL_GetPerformanceFrequency();
     last_time                 = current_time;
 
-    //
-    // handle inputs
+    // HANDLE INPUTS
     while(SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { quit = true; } }
     if (KEYS[SDL_SCANCODE_ESCAPE]) { quit = true; }
 
+    // START DRAWING
     sh_gfx_clear(gfx, 0xFF000000);
 
-    fTheta += 0.4 * delta_time;
-
-    // Setup Rotation Matrices
-    mat4x4_t matRotZ = {0}, matRotX = {0};
-
-    // Rotation Z
-    matRotZ.m[0][0] = cosf(fTheta);  matRotZ.m[0][1] = sinf(fTheta);
-    matRotZ.m[1][0] = -sinf(fTheta); matRotZ.m[1][1] = cosf(fTheta);
-    matRotZ.m[2][2] = 1.0f;          matRotZ.m[3][3] = 1.0f;
-    // Rotation X
-    matRotX.m[0][0] = 1.0f;
-    matRotX.m[1][1] = cosf(fTheta * 0.5f);  matRotX.m[1][2] = sinf(fTheta * 0.5f);
-    matRotX.m[2][1] = -sinf(fTheta * 0.5f); matRotX.m[2][2] = cosf(fTheta * 0.5f);
-    matRotX.m[3][3] = 1.0f;
+    fTheta         += 60.0f * delta_time;
+    mat4x4_t matRot = create_rotation_matrix(fTheta, fTheta, fTheta);
 
     for (int i = 0; i < 12; ++i) {
       triangle_t tri = cube.tri[i];
-      triangle_t triRotatedZ, triRotatedZX, triTranslated, triProjected;
+      triangle_t triProjected, triTranslated, triRotated;
 
-      // Rotate in Z-Axis
-      triRotatedZ.p[0] = multiply_mat4x4_vec3d(tri.p[0], matRotZ);
-      triRotatedZ.p[1] = multiply_mat4x4_vec3d(tri.p[1], matRotZ);
-      triRotatedZ.p[2] = multiply_mat4x4_vec3d(tri.p[2], matRotZ);
+      triRotated.p[0] = multiply_mat4x4_vec3d(tri.p[0], matRot);
+      triRotated.p[1] = multiply_mat4x4_vec3d(tri.p[1], matRot);
+      triRotated.p[2] = multiply_mat4x4_vec3d(tri.p[2], matRot);
 
-      // Rotate in X-Axis
-      triRotatedZX.p[0] = multiply_mat4x4_vec3d(triRotatedZ.p[0], matRotX);
-      triRotatedZX.p[1] = multiply_mat4x4_vec3d(triRotatedZ.p[1], matRotX);
-      triRotatedZX.p[2] = multiply_mat4x4_vec3d(triRotatedZ.p[2], matRotX);
+      triTranslated = triRotated;
 
-      // Translate geometry out into the scene (away from the camera)
-      triTranslated = triRotatedZX;
-      triTranslated.p[0].z = triRotatedZX.p[0].z + 3.0f; // Push 3 units into screen
-      triTranslated.p[1].z = triRotatedZX.p[1].z + 3.0f;
-      triTranslated.p[2].z = triRotatedZX.p[2].z + 3.0f;
+      // PUSH THE CUBE IN Z DIR
+      triTranslated.p[0].z = triRotated.p[0].z + 3.0f; // Push 3 units into screen
+      triTranslated.p[1].z = triRotated.p[1].z + 3.0f;
+      triTranslated.p[2].z = triRotated.p[2].z + 3.0f;
 
-      // Project 3D points onto 2D viewport space
+      // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
       triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
       triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
       triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
 
-      // Scale and offset into screen pixel space (Normalized Device Coordinates -> Screen Space)
-      // Map X and Y from [-1, 1] to [0, SWIDTH] and [0, SHEIGHT]
+      // NORMALIZED DEVICE COORDINATES -> SCREEN SPACE
       for (int v = 0; v < 3; ++v) {
+        // take the Coordinates and shift btw 0 and 2 
+        // divide the 2 or 0.5 and scale it to appropriate size
         triProjected.p[v].x = (triProjected.p[v].x + 1.0f) * 0.5f * SWIDTH;
         triProjected.p[v].y = (triProjected.p[v].y + 1.0f) * 0.5f * SHEIGHT;
       }
 
+      // DRAW THE CUBE
       uint32_t wfColor = 0xFFFFFFFF;
       sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
       sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
