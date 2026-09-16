@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdbool.h>
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
@@ -88,9 +87,12 @@ int main(int argc, char** argv) {
 
         // DRAW THE CUBE
         uint32_t wfColor = 0xFFFFFFFF;
-        sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
-        sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
-        sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
+        // sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
+        // sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
+        // sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
+
+        // sh_gfx_draw_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
+        sh_gfx_fill_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
       }
     }
 

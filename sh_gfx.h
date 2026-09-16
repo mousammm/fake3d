@@ -26,6 +26,8 @@ SH_GFX_DEF void    sh_gfx_clear(sh_gfx* gfx, const uint32_t color);
 SH_GFX_DEF void    sh_gfx_put_pixel(sh_gfx* gfx, const int x, const int y, const uint32_t color);
 SH_GFX_DEF void    sh_gfx_cleanup(sh_gfx* gfx);
 SH_GFX_DEF void    sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, uint32_t color);
+SH_GFX_DEF void    sh_gfx_draw_triangle(sh_gfx* gfx, int px1, int py1, int px2, int py2, int px3, int py3, uint32_t wfColor);
+SH_GFX_DEF void    sh_gfx_fill_triangle(sh_gfx* gfx, int px1, int py1, int px2, int py2, int px3, int py3, uint32_t fillHeightColor);
 
 #endif // SDL_GFX_HEADER
 
@@ -112,6 +114,67 @@ SH_GFX_DEF void sh_gfx_draw_line(sh_gfx* gfx, int x0, int y0, int x1, int y1, ui
     if (e2 < dx) {
       err += dx;
       y0 += sy;
+    }
+  }
+}
+
+SH_GFX_DEF void sh_gfx_draw_triangle(sh_gfx* gfx, int px1, int py1, int px2, int py2, int px3, int py3, uint32_t wfColor)
+{
+  sh_gfx_draw_line(gfx, px1, py1, px2, py2, wfColor);
+  sh_gfx_draw_line(gfx, px2, py2, px3, py3, wfColor);
+  sh_gfx_draw_line(gfx, px3, py3, px1, py1, wfColor);
+}
+
+static void sh_gfx_swap_int(int* a, int* b) { int temp = *a; *a = *b; *b = temp; }
+static void sh_gfx_draw_horizontal_line(sh_gfx* gfx, int x1, int x2, int y, uint32_t color) {
+  if (x1 > x2) sh_gfx_swap_int(&x1, &x2);
+  for (int x = x1; x <= x2; x++) { sh_gfx_put_pixel(gfx, x, y, color); }
+}
+
+SH_GFX_DEF void sh_gfx_fill_triangle(sh_gfx* gfx, int px1, int py1, int px2, int py2, int px3, int py3, uint32_t fillHeightColor)
+{
+  // 1. Sort vertices by Y-coordinate ascending (py1 <= py2 <= py3)
+  if (py1 > py2) { sh_gfx_swap_int(&py1, &py2); sh_gfx_swap_int(&px1, &px2); }
+  if (py1 > py3) { sh_gfx_swap_int(&py1, &py3); sh_gfx_swap_int(&px1, &px3); }
+  if (py2 > py3) { sh_gfx_swap_int(&py2, &py3); sh_gfx_swap_int(&px2, &px3); }
+
+  // Degenerate case: triangle has zero height
+  if (py1 == py3) return;
+
+  // 2. Check for flat-bottom, flat-top, or general triangle splitting
+  if (py2 == py3) {
+    // Flat-bottom triangle
+    for (int y = py1; y <= py2; y++) {
+      int xs = px1 + (y - py1) * (px2 - px1) / (py2 - py1);
+      int xe = px1 + (y - py1) * (px3 - px1) / (py3 - py1);
+      sh_gfx_draw_horizontal_line(gfx, xs, xe, y, fillHeightColor);
+    }
+  } 
+  else if (py1 == py2) {
+    // Flat-top triangle
+    for (int y = py1; y <= py3; y++) {
+      int xs = px1 + (y - py1) * (px3 - px1) / (py3 - py1);
+      int xe = px2 + (y - py2) * (px3 - px2) / (py3 - py2);
+      sh_gfx_draw_horizontal_line(gfx, xs, xe, y, fillHeightColor);
+    }
+  } 
+  else {
+    // General triangle: split into Flat-Bottom and Flat-Top
+    // Find splitting point vertex (split_x, py2) on the long edge (px1,py1) -> (px3,py3)
+    int split_x = px1 + (py2 - py1) * (px3 - px1) / (py3 - py1);
+
+    // Top half (Flat-Bottom)
+    for (int y = py1; y <= py2; y++) {
+      int xs = px1 + (y - py1) * (px2 - px1) / (py2 - py1);
+      int xe = px1 + (y - py1) * (split_x - px1) / (py2 - py1);
+      sh_gfx_draw_horizontal_line(gfx, xs, xe, y, fillHeightColor);
+    }
+
+    // Bottom half (Flat-Top)
+    for (int y = py2; y <= py3; y++) {
+      int xs = px2 + (y - py2) * (px3 - px2) / (py3 - py2);
+      int xe = split_x + (y - py2) * (px3 - split_x) / (py3 - py2);
+      sh_gfx_draw_horizontal_line(gfx, xs, xe, y, fillHeightColor);
     }
   }
 }
