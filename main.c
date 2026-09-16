@@ -5,6 +5,8 @@
 #include "./sh_gfx.h"
 #include "./sh_la.h"
 
+vec3d_t vCamera = {0};
+
 int main(int argc, char** argv) {
   sh_gfx* gfx = sh_gfx_init("fake3d", SWIDTH, SHEIGHT);
 
@@ -66,7 +68,11 @@ int main(int argc, char** argv) {
       float l = sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
       normal.x /= l; normal.y /= l; normal.z /= l;
 
-      if (normal.z < 0) {
+      // if (normal.z < 0) {
+      if (normal.x * (triTranslated.p[0].x - vCamera.x) +
+          normal.y * (triTranslated.p[0].y - vCamera.y) +
+          normal.z * (triTranslated.p[0].z - vCamera.z) 
+          < 0.0f) {
         // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
         triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
         triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
