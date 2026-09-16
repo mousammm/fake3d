@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
     sh_gfx_clear(gfx, 0xFF000000);
 
     fTheta         += 60.0f * delta_time;
-    mat4x4_t matRot = create_rotation_matrix(fTheta, fTheta, fTheta);
+    mat4x4_t matRot = create_rotation_matrix(0.0f, fTheta, fTheta);
 
     for (int i = 0; i < 12; ++i) {
       triangle_t tri = cube.tri[i];
@@ -47,24 +48,44 @@ int main(int argc, char** argv) {
       triTranslated.p[1].z = triRotated.p[1].z + 3.0f;
       triTranslated.p[2].z = triRotated.p[2].z + 3.0f;
 
-      // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
-      triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
-      triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
-      triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
+      // BACKFACE
+      vec3d_t normal, line1, line2;
+      line1.x = triTranslated.p[1].x - triTranslated.p[0].x;
+      line1.y = triTranslated.p[1].y - triTranslated.p[0].y;
+      line1.z = triTranslated.p[1].z - triTranslated.p[0].z;
 
-      // NORMALIZED DEVICE COORDINATES -> SCREEN SPACE
-      for (int v = 0; v < 3; ++v) {
-        // take the Coordinates and shift btw 0 and 2 
-        // divide the 2 or 0.5 and scale it to appropriate size
-        triProjected.p[v].x = (triProjected.p[v].x + 1.0f) * 0.5f * SWIDTH;
-        triProjected.p[v].y = (triProjected.p[v].y + 1.0f) * 0.5f * SHEIGHT;
+      line2.x = triTranslated.p[2].x - triTranslated.p[0].x;
+      line2.y = triTranslated.p[2].y - triTranslated.p[0].y;
+      line2.z = triTranslated.p[2].z - triTranslated.p[0].z;
+
+      // CORSS PRODUCT
+      normal.x = line1.y * line2.z - line1.z * line2.y;
+      normal.y = line1.z * line2.x - line1.x * line2.z;
+      normal.z = line1.x * line2.y - line1.y * line2.x;
+      
+      float l = sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+      normal.x /= l; normal.y /= l; normal.z /= l;
+
+      if (normal.z < 0) {
+        // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
+        triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
+        triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
+        triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
+
+        // NORMALIZED DEVICE COORDINATES -> SCREEN SPACE
+        for (int v = 0; v < 3; ++v) {
+          // take the Coordinates and shift btw 0 and 2 
+          // divide the 2 or 0.5 and scale it to appropriate size
+          triProjected.p[v].x = (triProjected.p[v].x + 1.0f) * 0.5f * SWIDTH;
+          triProjected.p[v].y = (triProjected.p[v].y + 1.0f) * 0.5f * SHEIGHT;
+        }
+
+        // DRAW THE CUBE
+        uint32_t wfColor = 0xFFFFFFFF;
+        sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
+        sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
+        sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
       }
-
-      // DRAW THE CUBE
-      uint32_t wfColor = 0xFFFFFFFF;
-      sh_gfx_draw_line(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, wfColor);
-      sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
-      sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
     }
 
     sh_gfx_render(gfx);
