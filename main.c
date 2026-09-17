@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
@@ -5,6 +6,27 @@
 #include "./sh_la.h"
 
 vec3d_t vCamera = {0};
+
+uint32_t getColor(float dp) {
+  // Clamp the dot product between 0.0f (shadow) and 1.0f (fully lit)
+  float intensity = (dp < 0.0f) ? 0.0f : (dp > 1.0f ? 1.0f : dp);
+
+  // Define your base color components (e.g., White: R=255, G=255, B=255)
+  uint8_t baseR = 255;
+  uint8_t baseG = 255;
+  uint8_t baseB = 255;
+  uint8_t alpha = 255; // Fully opaque
+
+  // Apply light intensity to the color channels
+  uint8_t r = (uint8_t)(baseR * intensity);
+  uint8_t g = (uint8_t)(baseG * intensity);
+  uint8_t b = (uint8_t)(baseB * intensity);
+
+  // Pack them into ARGB format (0xAARRGGBB) using bitwise shifts
+  uint32_t argbColor = (alpha << 24) | (r << 16) | (g << 8) | b;
+
+  return argbColor;
+}
 
 int main(int argc, char** argv) {
   sh_gfx* gfx = sh_gfx_init("fake3d", SWIDTH, SHEIGHT);
@@ -72,10 +94,19 @@ int main(int argc, char** argv) {
           normal.y * (triTranslated.p[0].y - vCamera.y) +
           normal.z * (triTranslated.p[0].z - vCamera.z) 
           < 0.0f) {
+        // ILLUMINATION
+        vec3d_t light_direction = { 0.0f, 0.0f, -1.0f };
+        float l = sqrtf(light_direction.x * light_direction.x + light_direction.y * light_direction.y + light_direction.z * light_direction.z);
+        light_direction.x /= l; light_direction.y /= l; light_direction.z /= l;
+
+        float dp = normal.x * light_direction.x + normal.y * light_direction.y + normal.z * light_direction.z;
+        triTranslated.color = getColor(dp);
+
         // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
         triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
         triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
         triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
+        triProjected.color = triTranslated.color;
 
         // NORMALIZED DEVICE COORDINATES -> SCREEN SPACE
         for (int v = 0; v < 3; ++v) {
@@ -91,8 +122,8 @@ int main(int argc, char** argv) {
         // sh_gfx_draw_line(gfx, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
         // sh_gfx_draw_line(gfx, triProjected.p[2].x, triProjected.p[2].y, triProjected.p[0].x, triProjected.p[0].y, wfColor);
 
-        // sh_gfx_draw_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
-        sh_gfx_fill_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, wfColor);
+        sh_gfx_fill_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, triProjected.color);
+        //sh_gfx_draw_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, 0xFFFF0000);
       }
     }
 

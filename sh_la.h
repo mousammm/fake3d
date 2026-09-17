@@ -1,6 +1,7 @@
 #ifndef SH_LA_A
 #define SH_LA_A
 
+#include <stdint.h>
 #include <math.h>
 
 #define DEG_TO_RAD 0.017453292519943f //  PI/180
@@ -15,6 +16,7 @@ typedef struct {
 
 typedef struct {
   vec3d_t p[3];
+  uint32_t color;
 } triangle_t;
 
 typedef struct {
