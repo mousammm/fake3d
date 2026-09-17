@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
@@ -6,6 +7,19 @@
 #include "./sh_la.h"
 
 vec3d_t vCamera = {0};
+
+int compareTriangles(const void* a, const void* b) {
+    const triangle_t* tri1 = (const triangle_t*)a;
+    const triangle_t* tri2 = (const triangle_t*)b;
+
+    // Calculate average Z depth for both triangles (using pre-projected translated Z coordinates)
+    float z1 = (tri1->p[0].z + tri1->p[1].z + tri1->p[2].z) / 3.0f;
+    float z2 = (tri2->p[0].z + tri2->p[1].z + tri2->p[2].z) / 3.0f;
+
+    if (z1 > z2) return -1;
+    if (z1 < z2) return 1;
+    return 0;
+}
 
 uint32_t getColor(float dp) {
   // Clamp the dot product between 0.0f (shadow) and 1.0f (fully lit)
@@ -116,6 +130,10 @@ int main(int argc, char** argv) {
     fTheta         += 60.0f * delta_time;
     mat4x4_t matRot = create_rotation_matrix(0.0f, fTheta, fTheta);
 
+    // Allocate a dynamic array to buffer the visible triangles for this frame
+    int trianglesToRenderCount = 0;
+    triangle_t* vecTrianglesToRaster = (triangle_t*)malloc(cube.triangle_count * sizeof(triangle_t));
+
     for (int i = 0; i < cube.triangle_count; ++i) {
       triangle_t tri = cube.tri[i];
       triangle_t triProjected, triTranslated, triRotated;
@@ -127,9 +145,9 @@ int main(int argc, char** argv) {
       triTranslated = triRotated;
 
       // PUSH THE CUBE IN Z DIR
-      triTranslated.p[0].z = triRotated.p[0].z + 3.0f; // Push 3 units into screen
-      triTranslated.p[1].z = triRotated.p[1].z + 3.0f;
-      triTranslated.p[2].z = triRotated.p[2].z + 3.0f;
+      triTranslated.p[0].z = triRotated.p[0].z + 10.0f; // Push 3 units into screen
+      triTranslated.p[1].z = triRotated.p[1].z + 10.0f;
+      triTranslated.p[2].z = triRotated.p[2].z + 10.0f;
 
       // BACKFACE
       vec3d_t normal, line1, line2;
@@ -176,11 +194,21 @@ int main(int argc, char** argv) {
           triProjected.p[v].y = (triProjected.p[v].y + 1.0f) * 0.5f * SHEIGHT;
         }
 
-        // DRAW THE CUBE
-        sh_gfx_fill_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, triProjected.color);
-        sh_gfx_draw_triangle(gfx, triProjected.p[0].x, triProjected.p[0].y, triProjected.p[1].x, triProjected.p[1].y, triProjected.p[2].x, triProjected.p[2].y, 0xFF000000);
+        // store triangle for sorting
+        vecTrianglesToRaster[trianglesToRenderCount] = triProjected;
+        trianglesToRenderCount++;
       }
     }
+
+    // 2. Sort the accumulated triangles using the Painter's Algorithm
+    qsort(vecTrianglesToRaster, trianglesToRenderCount, sizeof(triangle_t), compareTriangles);
+
+    for (int i = 0; i < trianglesToRenderCount; i++) {
+      triangle_t raster_triangle = vecTrianglesToRaster[i];
+      sh_gfx_fill_triangle(gfx, raster_triangle.p[0].x, raster_triangle.p[0].y, raster_triangle.p[1].x, raster_triangle.p[1].y, raster_triangle.p[2].x, raster_triangle.p[2].y, raster_triangle.color);
+      //sh_gfx_draw_triangle(gfx, raster_triangle.p[0].x, raster_triangle.p[0].y, raster_triangle.p[1].x, raster_triangle.p[1].y, raster_triangle.p[2].x, raster_triangle.p[2].y, 0xFFFF0000);
+    }
+    free(vecTrianglesToRaster);
 
     sh_gfx_render(gfx);
   }
