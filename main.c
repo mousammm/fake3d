@@ -1,6 +1,6 @@
-#include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
 #include "./constants.h"
 #define SDL_GFX_IMPLEMENTATION
 #include "./sh_gfx.h"
@@ -12,16 +12,16 @@
 vec3d_t vCamera = {0};
 
 int compareTriangles(const void* a, const void* b) {
-    const triangle_t* tri1 = (const triangle_t*)a;
-    const triangle_t* tri2 = (const triangle_t*)b;
+  const triangle_t* tri1 = (const triangle_t*)a;
+  const triangle_t* tri2 = (const triangle_t*)b;
 
-    // Calculate average Z depth for both triangles (using pre-projected translated Z coordinates)
-    float z1 = (tri1->p[0].z + tri1->p[1].z + tri1->p[2].z) / 3.0f;
-    float z2 = (tri2->p[0].z + tri2->p[1].z + tri2->p[2].z) / 3.0f;
+  // Calculate average Z depth for both triangles (using pre-projected translated Z coordinates)
+  float z1 = (tri1->p[0].z + tri1->p[1].z + tri1->p[2].z) / 3.0f;
+  float z2 = (tri2->p[0].z + tri2->p[1].z + tri2->p[2].z) / 3.0f;
 
-    if (z1 > z2) return -1;
-    if (z1 < z2) return 1;
-    return 0;
+  if (z1 > z2) return -1;
+  if (z1 < z2) return 1;
+  return 0;
 }
 
 uint32_t getColor(float dp) {
@@ -43,65 +43,6 @@ uint32_t getColor(float dp) {
   uint32_t argbColor = (alpha << 24) | (r << 16) | (g << 8) | b;
 
   return argbColor;
-}
-
-mesh_t loadOBJFile(const char* filename) {
-  mesh_t mesh = { .tri = NULL, .triangle_count = 0 };
-  FILE* file = fopen(filename, "r");
-  if (!file) {
-    printf("Error: Could not open file %s\n", filename);
-    return mesh;
-  }
-
-  char line[128];
-  int vertex_count = 0;
-  int face_count = 0;
-
-  // Pass 1: Count vertices and faces for memory allocation
-  while (fgets(line, sizeof(line), file)) {
-    if (line[0] == 'v' && line[1] == ' ') {
-      vertex_count++;
-    } else if (line[0] == 'f' && line[1] == ' ') {
-      face_count++;
-    }
-  }
-
-  // Allocate array to hold temporary vertices
-  vec3d_t* verts = (vec3d_t*)malloc(vertex_count * sizeof(vec3d_t));
-  // Allocate the actual triangles into your mesh struct
-  mesh.tri = (triangle_t*)malloc(face_count * sizeof(triangle_t));
-  mesh.triangle_count = face_count;
-
-  // Rewind file to start parsing actual data
-  rewind(file);
-
-  int v_idx = 0;
-  int f_idx = 0;
-
-  while (fgets(line, sizeof(line), file)) {
-    // Parse individual Vertex
-    if (line[0] == 'v' && line[1] == ' ') {
-      sscanf(line, "v %lf %lf %lf", &verts[v_idx].x, &verts[v_idx].y, &verts[v_idx].z);
-      v_idx++;
-    }
-    // Parse individual Face (Triangle)
-    else if (line[0] == 'f' && line[1] == ' ') {
-      int f1, f2, f3;
-      // Note: OBJ indices are 1-based, C arrays are 0-based (hence the -1)
-      sscanf(line, "f %d %d %d", &f1, &f2, &f3);
-      
-      mesh.tri[f_idx].p[0] = verts[f1 - 1];
-      mesh.tri[f_idx].p[1] = verts[f2 - 1];
-      mesh.tri[f_idx].p[2] = verts[f3 - 1];
-      mesh.tri[f_idx].color = 0xFFFFFFFF; // Default to fully opaque white ARGB
-      
-      f_idx++;
-    }
-  }
-
-  fclose(file);
-  free(verts); // Free temporary vertex array
-  return mesh;
 }
 
 int main(int argc, char** argv) {
@@ -131,7 +72,7 @@ int main(int argc, char** argv) {
     sh_gfx_clear(gfx, 0xFF000000);
 
     fTheta         += 60.0f * delta_time;
-    mat4x4_t matRot = create_rotation_matrix(fTheta, 0.0f, 0.0f);
+    mat4x4_t matRot = create_rotation_matrix(fTheta, fTheta, 0.0f);
 
     // Allocate a dynamic array to buffer the visible triangles for this frame
     int trianglesToRenderCount = 0;
