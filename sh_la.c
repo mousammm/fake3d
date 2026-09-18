@@ -149,10 +149,10 @@ mat4x4_t create_perspective_matrix(int screen_width, int screen_height, float fo
   const float aspect = (float)screen_height / (float)screen_width;
 
   return (mat4x4_t) {{
-    {aspect*fov_rad,    0.0f,                       0.0f,  0.0f},
-    {          0.0f, fov_rad,                       0.0f,  0.0f},
-    {          0.0f,    0.0f,         far / (far - near),  1.0f},
-    {          0.0f,    0.0f, (-far * near)/(far - near),  0.0f},
+    {aspect*fov_rad,    0.0f,                       0.0f,   0.0f},
+    {          0.0f, fov_rad,                       0.0f,   0.0f},
+    {          0.0f,    0.0f,         far / (far - near),  -1.0f},
+    {          0.0f,    0.0f, (-far * near)/(far - near),   0.0f},
   }};
 }
 

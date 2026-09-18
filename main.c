@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
   sh_gfx* gfx = sh_gfx_init("fake3d", SWIDTH, SHEIGHT);
 
   // mesh_t cube      = create_cube();
-  mesh_t cube      = loadOBJFile("./ship.obj");
+  mesh_t cube      = loadOBJFile("./models/ship.obj");
   mat4x4_t matProj = create_perspective_matrix(SWIDTH, SHEIGHT, FOV, NEAR_PLANE, FAR_PLANE);
   float fTheta     = 0.0f; // Angle tracker for rotation
 
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
     sh_gfx_clear(gfx, 0xFF000000);
 
     fTheta         += 60.0f * delta_time;
-    mat4x4_t matRot = create_rotation_matrix(0.0f, fTheta, fTheta);
+    mat4x4_t matRot = create_rotation_matrix(fTheta, 0.0f, 0.0f);
 
     // Allocate a dynamic array to buffer the visible triangles for this frame
     int trianglesToRenderCount = 0;
@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < trianglesToRenderCount; i++) {
       triangle_t raster_triangle = vecTrianglesToRaster[i];
       sh_gfx_fill_triangle(gfx, raster_triangle.p[0].x, raster_triangle.p[0].y, raster_triangle.p[1].x, raster_triangle.p[1].y, raster_triangle.p[2].x, raster_triangle.p[2].y, raster_triangle.color);
-      //sh_gfx_draw_triangle(gfx, raster_triangle.p[0].x, raster_triangle.p[0].y, raster_triangle.p[1].x, raster_triangle.p[1].y, raster_triangle.p[2].x, raster_triangle.p[2].y, 0xFFFF0000);
+      sh_gfx_draw_triangle(gfx, raster_triangle.p[0].x, raster_triangle.p[0].y, raster_triangle.p[1].x, raster_triangle.p[1].y, raster_triangle.p[2].x, raster_triangle.p[2].y, 0xFFFF0000);
     }
     free(vecTrianglesToRaster);
 
