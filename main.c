@@ -5,6 +5,9 @@
 #define SDL_GFX_IMPLEMENTATION
 #include "./sh_gfx.h"
 #include "./sh_la.h"
+#include "./obj.h"
+
+#include "./sh_la.c"
 
 vec3d_t vCamera = {0};
 
@@ -138,9 +141,9 @@ int main(int argc, char** argv) {
       triangle_t tri = cube.tri[i];
       triangle_t triProjected, triTranslated, triRotated;
 
-      triRotated.p[0] = multiply_mat4x4_vec3d(tri.p[0], matRot);
-      triRotated.p[1] = multiply_mat4x4_vec3d(tri.p[1], matRot);
-      triRotated.p[2] = multiply_mat4x4_vec3d(tri.p[2], matRot);
+      triRotated.p[0] = mat4x4_mul_vec3d(tri.p[0], matRot);
+      triRotated.p[1] = mat4x4_mul_vec3d(tri.p[1], matRot);
+      triRotated.p[2] = mat4x4_mul_vec3d(tri.p[2], matRot);
 
       triTranslated = triRotated;
 
@@ -181,9 +184,9 @@ int main(int argc, char** argv) {
         triTranslated.color = getColor(dp);
 
         // PROJECT 3D POINTS ONTO 2D VIEWPORT SPACE
-        triProjected.p[0] = multiply_mat4x4_vec3d(triTranslated.p[0], matProj);
-        triProjected.p[1] = multiply_mat4x4_vec3d(triTranslated.p[1], matProj);
-        triProjected.p[2] = multiply_mat4x4_vec3d(triTranslated.p[2], matProj);
+        triProjected.p[0] = mat4x4_mul_vec3d(triTranslated.p[0], matProj);
+        triProjected.p[1] = mat4x4_mul_vec3d(triTranslated.p[1], matProj);
+        triProjected.p[2] = mat4x4_mul_vec3d(triTranslated.p[2], matProj);
         triProjected.color = triTranslated.color;
 
         // NORMALIZED DEVICE COORDINATES -> SCREEN SPACE
